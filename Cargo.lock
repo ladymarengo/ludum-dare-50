@@ -1730,6 +1730,8 @@ dependencies = [
  "benimator",
  "bevy",
  "heron",
+ "instant",
+ "rand",
 ]
 
 [[package]]

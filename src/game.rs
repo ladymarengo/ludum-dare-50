@@ -33,7 +33,8 @@ impl Plugin for Game {
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
                 .with_system(move_torch)
-                .with_system(check_collisions))
+                .with_system(check_collisions)
+                .with_system(cat_move))
             .add_system_set(
                 SystemSet::on_exit(AppState::Game)
                 .with_system(cleanup_game)
@@ -59,7 +60,7 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(SpriteBundle {
         texture: asset_server.load("test/torch_test.png"),
         transform: Transform {
-            translation: Vec3::new(0.0, 0.0, 2.0),
+            translation: Vec3::new(0.0, 0.0, -2.0),
             ..Default::default()
         },
         sprite: Sprite {
@@ -96,7 +97,87 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn_bundle(SpriteBundle {
         transform: Transform {
+            translation: Vec3::new(200.0, -100.0, 2.0),
+            scale: Vec3::new(100.0, 100.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::BLUE,
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
+    .insert(GameMarker)
+    .insert(GoodPlace)
+    .insert(Place)
+    .insert(Seen(false));
+
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(-100.0, 100.0, 2.0),
+            scale: Vec3::new(100.0, 100.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::BLUE,
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
+    .insert(GameMarker)
+    .insert(GoodPlace)
+    .insert(Place)
+    .insert(Seen(false));
+
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
             translation: Vec3::new(-200.0, -100.0, 2.0),
+            scale: Vec3::new(100.0, 100.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::RED,
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
+    .insert(GameMarker)
+    .insert(BadPlace)
+    .insert(Place)
+    .insert(Seen(false));
+
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(-400.0, -100.0, 2.0),
+            scale: Vec3::new(100.0, 100.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::RED,
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
+    .insert(GameMarker)
+    .insert(BadPlace)
+    .insert(Place)
+    .insert(Seen(false));
+    
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(-200.0, 300.0, 2.0),
             scale: Vec3::new(100.0, 100.0, 0.0),
             ..Default::default()
         },
