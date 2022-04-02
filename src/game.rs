@@ -1,11 +1,25 @@
 use bevy::prelude::*;
+use heron::*;
 use super::*;
+use crate::cat::*;
 
 #[derive(Component)]
 pub struct GameMarker;
 
 #[derive(Component)]
 pub struct Torch;
+
+#[derive(Component)]
+pub struct Place;
+
+#[derive(Component)]
+pub struct GoodPlace;
+
+#[derive(Component)]
+pub struct BadPlace;
+
+#[derive(Component)]
+pub struct Seen(pub bool);
 
 pub struct Game;
 
@@ -14,10 +28,12 @@ impl Plugin for Game {
         app
             .add_system_set(
                 SystemSet::on_enter(AppState::Game)
-                .with_system(spawn_game))
+                .with_system(spawn_game)
+            .with_system(spawn_cats))
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
-                .with_system(move_torch))
+                .with_system(move_torch)
+                .with_system(check_collisions))
             .add_system_set(
                 SystemSet::on_exit(AppState::Game)
                 .with_system(cleanup_game)
@@ -52,8 +68,51 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         ..Default::default()
     })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
     .insert(GameMarker)
     .insert(Torch);
+
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(100.0, 100.0, 2.0),
+            scale: Vec3::new(100.0, 100.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::BLUE,
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
+    .insert(GameMarker)
+    .insert(GoodPlace)
+    .insert(Place)
+    .insert(Seen(false));
+
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(-200.0, -100.0, 2.0),
+            scale: Vec3::new(100.0, 100.0, 0.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            color: Color::RED,
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(RigidBody::Static)
+    .insert(SensorShape)
+    .insert(CollisionShape::Sphere { radius: 20.0 })
+    .insert(GameMarker)
+    .insert(BadPlace)
+    .insert(Place)
+    .insert(Seen(false));
 }
 
 fn cleanup_game(mut commands: Commands, query: Query<Entity, With<GameMarker>>) {
@@ -80,3 +139,29 @@ fn move_torch(mut torch: Query<&mut Transform, With<Torch>>, wnds: Res<Windows>,
         torch.translation.y = world_pos.y;
     }
 }
+
+fn check_collisions(mut events: EventReader<CollisionEvent>, torch: Query<Entity, With<Torch>>,
+    mut good_places: Query<(Entity, &mut Transform, &mut Seen), With<Place>>) {
+        let torch = torch.single();
+        for event in events.iter() {
+            match event {
+                CollisionEvent::Started(t, some_place) if t.rigid_body_entity() == torch => {
+                    for (place, mut place_transform, mut seen) in good_places.iter_mut() {
+                        if place == some_place.rigid_body_entity() {
+                            place_transform.scale = Vec3::new(10.0, 10.0, 0.0);
+                            seen.0 = true;
+                        }
+                    }
+                },
+                CollisionEvent::Stopped(t, some_place) if t.rigid_body_entity() == torch => {
+                    for (place, mut place_transform, mut seen) in good_places.iter_mut() {
+                        if place == some_place.rigid_body_entity() {
+                            place_transform.scale = Vec3::new(100.0, 100.0, 0.0);
+                            seen.0 = false;
+                        }
+                    }
+                },
+                _ => ()
+            } 
+        }
+    }

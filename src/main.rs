@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use heron::*;
 
 mod start;
 mod game;
+mod cat;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
@@ -20,6 +22,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugin(PhysicsPlugin::default())
         .add_plugin(start::StartAnimation)
         .add_plugin(game::Game)
         .add_system(bevy::input::system::exit_on_esc_system)
