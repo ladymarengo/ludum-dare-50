@@ -28,8 +28,12 @@ fn main() {
         .run()
 }
 
+#[derive(Component)]
+pub struct MainCamera;
+
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d())
+        .insert(MainCamera);
 }
 
 fn handle_input(keys: Res<Input<KeyCode>>, app_state: ResMut<State<AppState>>) {

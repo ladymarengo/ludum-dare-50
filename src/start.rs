@@ -19,15 +19,15 @@ impl Plugin for StartAnimation {
     }
 }
 
-fn spawn_start(mut commands: Commands) {
+fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(SpriteBundle {
+        texture: asset_server.load("test/start_test.png"),
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, 0.0),
-            scale: Vec3::new(800.0, 600.0, 0.0),
             ..Default::default()
         },
         sprite: Sprite {
-            color: Color::rgb(1.0, 0.0, 0.0),
+            custom_size: Some(Vec2::new(800.0, 600.0)),
             ..Default::default()
         },
         ..Default::default()
