@@ -33,7 +33,7 @@ fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>,
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let animation_handle = animations.add(SpriteSheetAnimation::from_range(
-        0..=23,
+        0..=24,
         Duration::from_millis(1000),
     ).once());
     commands.spawn_bundle(SpriteSheetBundle {
