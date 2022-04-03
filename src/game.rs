@@ -44,6 +44,7 @@ impl Plugin for Game {
                 .with_system(check_collisions)
                 .with_system(cat_move)
                 .with_system(check_defeat)
+                .with_system(stop_running)
                 .with_system(go_away),
         )
         .add_system_set(SystemSet::on_exit(AppState::Game).with_system(cleanup_game));
