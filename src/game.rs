@@ -1,8 +1,11 @@
 use super::*;
 use crate::cat::*;
+use benimator::*;
 use bevy::prelude::*;
 use heron::*;
 use instant::Instant;
+use rand::prelude::Rng;
+use std::time::Duration;
 
 #[derive(Component)]
 pub struct GameMarker;
@@ -26,7 +29,9 @@ pub struct Game;
 
 impl Plugin for Game {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
+        app
+        .init_resource::<cat::Animations>()
+        .add_system_set(
             SystemSet::on_enter(AppState::Game)
                 .with_system(spawn_game)
                 .with_system(spawn_cats),

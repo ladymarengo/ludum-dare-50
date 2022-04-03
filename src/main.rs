@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use heron::*;
+use benimator::*;
 
 mod start;
 mod game;
@@ -23,6 +24,7 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
+        .add_plugin(AnimationPlugin::default())
         .add_plugin(start::StartAnimation)
         .add_plugin(game::Game)
         .add_system(bevy::input::system::exit_on_esc_system)

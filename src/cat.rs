@@ -1,9 +1,11 @@
 use super::*;
 use crate::game::*;
+use benimator::*;
 use bevy::prelude::*;
 use heron::*;
 use instant::Instant;
 use rand::prelude::Rng;
+use std::time::Duration;
 
 #[derive(Component)]
 pub struct Cat;
@@ -23,16 +25,45 @@ pub struct Bad(pub bool);
 #[derive(Component)]
 pub struct GoAway(pub bool);
 
-pub fn spawn_cats(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Default)]
+pub struct Animations {
+    first_good: Handle<SpriteSheetAnimation>,
+    first_bad: Handle<SpriteSheetAnimation>,
+    second_good: Handle<SpriteSheetAnimation>,
+    second_bad: Handle<SpriteSheetAnimation>,
+}
+
+pub fn spawn_cats(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut animations: ResMut<Assets<SpriteSheetAnimation>>,
+    mut handles: ResMut<Animations>,
+) {
+    let texture = asset_server.load("cat1.png");
+    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(500.0, 500.0), 2, 1);
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+    handles.first_good = animations.add(SpriteSheetAnimation::from_range(
+        0..=0,
+        Duration::from_millis(100),
+    ));
+
+    handles.first_bad = animations.add(SpriteSheetAnimation::from_range(
+        1..=1,
+        Duration::from_millis(100),
+    ));
+
     commands
-        .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("cat1_good.png"),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 2.0),
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle.clone(),
+            sprite: TextureAtlasSprite {
+                index: 0,
+                custom_size: Some(Vec2::new(200.0, 200.0)),
                 ..Default::default()
             },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(200.0, 200.0)),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 2.0),
                 ..Default::default()
             },
             ..Default::default()
@@ -47,14 +78,27 @@ pub fn spawn_cats(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(BadTime(Instant::now()))
         .insert(LookTime(Instant::now()))
         .insert(Bad(false))
-        .insert(GoAway(false));
+        .insert(GoAway(false))
+        .insert(handles.first_good.clone())
+        .insert(Play);
 }
 
 pub fn cat_move(
-    mut cats: Query<(&mut Transform, &mut MoveTime, &mut Bad, &mut BadTime, &mut GoAway), With<Cat>>,
+    mut cats: Query<
+        (
+            &mut Transform,
+            &mut MoveTime,
+            &mut Bad,
+            &mut BadTime,
+            &mut GoAway,
+            &mut Handle<SpriteSheetAnimation>,
+        ),
+        With<Cat>,
+    >,
     places: Query<(&Transform, &Seen, Option<&BadPlace>), (With<Place>, Without<Cat>)>,
+    animations: Res<Animations>,
 ) {
-    for (mut cat, mut time, mut bad, mut badtime, mut go_away) in cats.iter_mut() {
+    for (mut cat, mut time, mut bad, mut badtime, mut go_away, mut animation) in cats.iter_mut() {
         if go_away.0 || (time.0.elapsed().as_millis() > 500 && !bad.0) {
             let mut rng = ::rand::thread_rng();
             let mut new_place = rng.gen_range(0..places.iter().count() * 3);
@@ -67,8 +111,12 @@ pub fn cat_move(
                     if seen.0 == false && place.translation != cat.translation {
                         cat.translation = place.translation;
                         if let Some(_bp) = bad_place {
+                            *animation = animations.first_bad.clone();
                             bad.0 = true;
                             badtime.0 = Instant::now();
+                        }
+                        else {
+                            *animation = animations.first_good.clone();
                         }
                         go_away.0 = false;
                         break;
