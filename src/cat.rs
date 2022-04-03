@@ -26,7 +26,7 @@ pub struct GoAway(pub bool);
 pub fn spawn_cats(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("test/cat_test.png"),
+            texture: asset_server.load("cat1_good.png"),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 2.0),
                 ..Default::default()

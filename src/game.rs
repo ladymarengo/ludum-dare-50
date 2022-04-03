@@ -36,7 +36,7 @@ impl Plugin for Game {
                 .with_system(move_torch)
                 .with_system(check_collisions)
                 .with_system(cat_move)
-                .with_system(check_defeat)
+                // .with_system(check_defeat)
                 .with_system(go_away),
         )
         .add_system_set(SystemSet::on_exit(AppState::Game).with_system(cleanup_game));
@@ -46,9 +46,9 @@ impl Plugin for Game {
 fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("test/game_test.png"),
+            texture: asset_server.load("room.png"),
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 0.0),
+                translation: Vec3::new(0.0, 0.0, 1.0),
                 ..Default::default()
             },
             sprite: Sprite {
@@ -60,14 +60,29 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(GameMarker);
 
     commands
+    .spawn_bundle(SpriteBundle {
+        texture: asset_server.load("room_transparent.png"),
+        transform: Transform {
+            translation: Vec3::new(0.0, 0.0, 3.0),
+            ..Default::default()
+        },
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(800.0, 600.0)),
+            ..Default::default()
+        },
+        ..Default::default()
+    })
+    .insert(GameMarker);
+
+    commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("test/torch_test.png"),
+            texture: asset_server.load("torch.png"),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, -2.0),
                 ..Default::default()
             },
             sprite: Sprite {
-                custom_size: Some(Vec2::new(3000.0, 2000.0)),
+                custom_size: Some(Vec2::new(1800.0, 1400.0)),
                 ..Default::default()
             },
             ..Default::default()
