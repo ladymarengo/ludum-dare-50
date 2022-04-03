@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use super::AppState;
 use super::*;
+use crate::places::*;
+use crate::game::*;
 
 #[derive(Component)]
 pub struct FinishMarker;
@@ -26,55 +28,63 @@ impl Plugin for Finish {
     }
 }
 
-pub fn spawn_finish(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_finish(mut commands: Commands, asset_server: Res<AssetServer>, place: Res<FinalPlace>) {
     commands.spawn_bundle(UiCameraBundle::default());
 
     commands
-        // .spawn_bundle(NodeBundle {
-        //     style: Style {
-        //         align_self: AlignSelf::FlexEnd,
-        //         position_type: PositionType::Absolute,
-        //         position: Rect {
-        //             bottom: Val::Px(5.0),
-        //             right: Val::Px(15.0),
-        //             ..Default::default()
-        //         },
-		// 		..Default::default()
-        //     },
-        //     color: Color::NONE.into(),
-        //     ..Default::default()
-        // })
-        // .with_children(|parent| {
+		.spawn_bundle(TextBundle {
+			style: Style {
+				align_self: AlignSelf::FlexEnd,
+				position_type: PositionType::Absolute,
+				position: Rect {
+					bottom: Val::Px(270.0),
+					right: Val::Px(250.0),
+					..Default::default()
+				},
+				..Default::default()
+			},
+			text: Text::with_section(
+				"points",
+				TextStyle {
+					font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+					font_size: 30.0,
+					color: Color::WHITE,
+				},
+				TextAlignment {
+					horizontal: HorizontalAlign::Center,
+					vertical: VerticalAlign::Center,
+					..Default::default()
+				},
+			),
+			..Default::default()
+		})
+		.insert(PointLabel)
+		.insert(FinishMarker);
 
-        //     parent
-                .spawn_bundle(TextBundle {
-                    style: Style {
-						align_self: AlignSelf::FlexEnd,
-						position_type: PositionType::Absolute,
-						position: Rect {
-							bottom: Val::Px(270.0),
-							right: Val::Px(250.0),
-							..Default::default()
-						},
-						..Default::default()
-                    },
-                    text: Text::with_section(
-                        "points",
-                        TextStyle {
-                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                            font_size: 30.0,
-                            color: Color::WHITE,
-                        },
-                        TextAlignment {
-							horizontal: HorizontalAlign::Center,
-							vertical: VerticalAlign::Center,
-							..Default::default()
-						},
-                    ),
-                    ..Default::default()
-                })
-                .insert(PointLabel)
-        // })
+	let path;
+
+	match place.0 {
+		CurrentPlace::Good => path = "room.png".to_string(),
+		CurrentPlace::Vase => path = "broken_vase.png".to_string(),
+		CurrentPlace::Wire => path = "broken_wire.png".to_string(),
+		CurrentPlace::Photo => path = "broken_photo.png".to_string(),
+		CurrentPlace::Chair => path = "broken_chair.png".to_string(),
+		CurrentPlace::Glass => path = "broken_glass.png".to_string(),
+	}
+	
+	commands
+		.spawn_bundle(SpriteBundle {
+			texture: asset_server.load(&path),
+			transform: Transform {
+				translation: Vec3::new(0.0, 0.0, 0.0),
+				..Default::default()
+			},
+			sprite: Sprite {
+				custom_size: Some(Vec2::new(800.0, 600.0)),
+				..Default::default()
+			},
+			..Default::default()
+		})
 		.insert(FinishMarker);
         
 }

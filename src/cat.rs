@@ -1,8 +1,7 @@
 use super::*;
 use crate::game::*;
-use benimator::*;
-use bevy::prelude::*;
-use heron::*;
+use crate::places::*;
+use crate::finish::*;
 use instant::Instant;
 use rand::prelude::Rng;
 use std::time::Duration;
@@ -73,7 +72,7 @@ pub fn spawn_cats(
                 ..Default::default()
             },
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
+                translation: Vec3::new(-325.0, -100.0, 1.0),
                 ..Default::default()
             },
             ..Default::default()
@@ -84,7 +83,7 @@ pub fn spawn_cats(
             half_extends: Vec3::new(100.0 / 2.0, 100.0 / 2.0, 0.0),
             border_radius: None,
         })
-        .insert(GameMarker)
+        .insert(FinishMarker)
         .insert(Cat)
         .insert(Seen(false))
         .insert(MoveTime(Instant::now()))
@@ -95,6 +94,45 @@ pub fn spawn_cats(
         .insert(GoAway(false))
         .insert(Running(false))
         .insert(handles.good.clone())
+        .insert(Current(CurrentPlace::Good))
+        .insert(Play);
+
+    let texture = asset_server.load("cat2.png");
+    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(500.0, 500.0), 3, 2);
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+    commands
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle.clone(),
+            sprite: TextureAtlasSprite {
+                index: 0,
+                custom_size: Some(Vec2::new(200.0, 200.0)),
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(-85.0, -65.0, 1.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(RigidBody::Static)
+        .insert(SensorShape)
+        .insert(CollisionShape::Cuboid {
+            half_extends: Vec3::new(100.0 / 2.0, 100.0 / 2.0, 0.0),
+            border_radius: None,
+        })
+        .insert(FinishMarker)
+        .insert(Cat)
+        .insert(Seen(false))
+        .insert(MoveTime(Instant::now()))
+        .insert(BadTime(Instant::now()))
+        .insert(LookTime(Instant::now()))
+        .insert(RunTime(Instant::now()))
+        .insert(Bad(false))
+        .insert(GoAway(false))
+        .insert(Running(false))
+        .insert(handles.good.clone())
+        .insert(Current(CurrentPlace::Good))
         .insert(Play);
 }
 
@@ -111,13 +149,14 @@ pub fn cat_move(
             &mut Handle<SpriteSheetAnimation>,
             &Seen,
             &Running,
+            &mut Current
         ),
         With<Cat>,
     >,
-    places: Query<(&Transform, &Seen, Option<&BadPlace>), (With<Place>, Without<Cat>)>,
+    places: Query<(&Transform, &Seen, Option<&BadPlace>, &Current), (With<Place>, Without<Cat>)>,
     animations: Res<Animations>,
 ) {
-    for (id, mut cat, mut time, mut bad, mut badtime, mut go_away, mut animation, cat_seen, running) in
+    for (id, mut cat, mut time, mut bad, mut badtime, mut go_away, mut animation, cat_seen, running, mut current_place) in
         cats.iter_mut()
     {
         if !running.0
@@ -131,7 +170,7 @@ pub fn cat_move(
                 multiplier = 1;
             }
             let mut new_place = rng.gen_range(0..places.iter().count() * multiplier);
-            for (place, seen, bad_place) in places.iter() {
+            for (place, seen, bad_place, current) in places.iter() {
                 if let (true, Some(_bp)) = (go_away.0, bad_place) {
                     continue;
                 }
@@ -147,6 +186,7 @@ pub fn cat_move(
                             *animation = animations.good.clone();
                         }
                         commands.entity(id).insert(Play);
+                        *current_place = *current;
                         go_away.0 = false;
                         break;
                     }
@@ -158,11 +198,13 @@ pub fn cat_move(
 }
 
 pub fn check_defeat(
-    cats: Query<(&mut Bad, &mut BadTime), With<Cat>>,
+    cats: Query<(&mut Bad, &mut BadTime, &Current), With<Cat>>,
     mut app_state: ResMut<State<AppState>>,
+    mut broken: ResMut<FinalPlace>,
 ) {
-    for (bad, bad_time) in cats.iter() {
+    for (bad, bad_time, place) in cats.iter() {
         if bad.0 && bad_time.0.elapsed().as_millis() > 5000 {
+            broken.0 = place.0;
             app_state.set(AppState::Finish).unwrap();
         }
     }
@@ -186,6 +228,7 @@ pub fn go_away(
     for (mut bad, look_time, mut go_away, mut seen, mut running, mut run_time, mut animation) in
         cats.iter_mut()
     {
+        // dbg!(running.0, bad.0, seen.0, look_time.0.elapsed().as_millis());
         if !running.0 && bad.0 && seen.0 && look_time.0.elapsed().as_millis() > 1000 {
             bad.0 = false;
             go_away.0 = true;

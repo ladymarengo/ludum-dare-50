@@ -1,26 +1,38 @@
 use super::*;
 use crate::game::*;
-use bevy::prelude::*;
 
-pub fn spawn_places(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Component, Clone, Copy)]
+pub struct Current(pub CurrentPlace);
+
+#[derive(Clone, Copy)]
+pub enum CurrentPlace {
+	Chair,
+	Glass,
+	Photo,
+	Vase,
+	Wire,
+	Good
+}
+
+pub fn spawn_places(mut commands: Commands) {
     
 	let good_places = vec![
-        (-263.0, 185.0),
-        (-325.0, -100.0),
-        (-250.0, -35.0),
-        (-85.0, -65.0),
-        (140.0, -65.0),
+        (-263.0, 185.0, CurrentPlace::Good),
+        (-325.0, -100.0, CurrentPlace::Good),
+        (-250.0, -35.0, CurrentPlace::Good),
+        (-85.0, -65.0, CurrentPlace::Good),
+        (140.0, -65.0, CurrentPlace::Good),
     ];
 
 	let bad_places = vec![
-		(20.0, 185.0),
-		(-240.0, -215.0), 
-		(40.0, -180.0), 
-		(310.0, 7.0), 
-		(330.0, -190.0), 
+		(20.0, 185.0, CurrentPlace::Photo),
+		(-240.0, -215.0, CurrentPlace::Chair), 
+		(40.0, -180.0, CurrentPlace::Glass), 
+		(310.0, 7.0, CurrentPlace::Vase), 
+		(330.0, -190.0, CurrentPlace::Wire), 
     ];
 
-	for (x, y) in good_places.iter() {
+	for (x, y, place) in good_places.iter() {
 		commands
         .spawn_bundle(SpriteBundle {
             transform: Transform {
@@ -43,11 +55,12 @@ pub fn spawn_places(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(GameMarker)
         .insert(Place)
         .insert(Seen(false))
-		.insert(GoodPlace);
+		.insert(GoodPlace)
+		.insert(Current(*place));
 
 	}
 
-	for (x, y) in bad_places.iter() {
+	for (x, y, place) in bad_places.iter() {
 		commands
         .spawn_bundle(SpriteBundle {
             transform: Transform {
@@ -70,6 +83,7 @@ pub fn spawn_places(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(GameMarker)
         .insert(Place)
         .insert(Seen(false))
-		.insert(BadPlace);
+		.insert(BadPlace)
+		.insert(Current(*place));
 	}
 }

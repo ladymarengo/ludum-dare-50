@@ -1,12 +1,7 @@
 use super::*;
 use crate::cat::*;
 use crate::places::*;
-use benimator::*;
-use bevy::prelude::*;
-use heron::*;
 use instant::Instant;
-use rand::prelude::Rng;
-use std::time::Duration;
 
 #[derive(Component)]
 pub struct GameMarker;
@@ -30,15 +25,19 @@ pub struct GameTime(pub Instant);
 
 pub struct Game;
 
+pub struct FinalPlace(pub CurrentPlace);
+
 impl Plugin for Game {
     fn build(&self, app: &mut App) {
         app
         .init_resource::<cat::Animations>()
         .insert_resource(GameTime(Instant::now()))
+        .insert_resource(FinalPlace(CurrentPlace::Good))
         .add_system_set(
             SystemSet::on_enter(AppState::Game)
                 .with_system(spawn_game)
                 .with_system(spawn_places)
+                .with_system(reset_time)
                 .with_system(spawn_cats),
         )
         .add_system_set(
@@ -152,7 +151,7 @@ fn check_collisions(
     for event in events.iter() {
         match event {
             CollisionEvent::Started(t, some_place) if t.rigid_body_entity() == torch => {
-                for (place, mut place_transform, mut seen, is_place, bad, mut look_time) in
+                for (place, mut place_transform, mut seen, is_place, bad, look_time) in
                     good_places.iter_mut()
                 {
                     if place == some_place.rigid_body_entity() {
@@ -190,3 +189,8 @@ fn check_collisions(
 pub fn update_points(mut points: ResMut<Points>, time: Res<GameTime>) {
     points.0 = (time.0.elapsed().as_millis() / 1000) as u32;
 }
+
+pub fn reset_time(mut time: ResMut<GameTime>) {
+    time.0 = Instant::now();
+}
+

@@ -29,11 +29,11 @@ fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>,
     mut animations: ResMut<Assets<SpriteSheetAnimation>>) {
 
     let texture = asset_server.load("start_seq.png");
-    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(1600.0, 1200.0), 5, 5);
+    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(800.0, 600.0), 6, 5);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let animation_handle = animations.add(SpriteSheetAnimation::from_range(
-        0..=24,
+        0..=29,
         Duration::from_millis(1000),
     ).once());
     commands.spawn_bundle(SpriteSheetBundle {

@@ -1,8 +1,6 @@
 use bevy::prelude::*;
-use finish::spawn_finish;
 use heron::*;
 use benimator::*;
-use instant::Instant;
 
 mod start;
 mod game;
@@ -43,7 +41,6 @@ fn main() {
         .add_plugin(finish::Finish)
         .add_system(bevy::input::system::exit_on_esc_system)
         .add_startup_system(spawn_camera)
-        // .add_startup_system(spawn_finish)
         .add_system(handle_input)
         .run()
 }
@@ -69,6 +66,5 @@ fn change_state(mut app_state: ResMut<State<AppState>>) {
         AppState::Hint => app_state.set(AppState::Game).unwrap(),
         AppState::Game => app_state.set(AppState::Hint).unwrap(),
         AppState::Finish => app_state.set(AppState::Hint).unwrap(),
-        _ => ()
     }
 }
