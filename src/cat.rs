@@ -63,14 +63,17 @@ pub fn spawn_cats(
                 ..Default::default()
             },
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 2.0),
+                translation: Vec3::new(0.0, 0.0, 1.0),
                 ..Default::default()
             },
             ..Default::default()
         })
         .insert(RigidBody::Static)
         .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 50.0 })
+        .insert(CollisionShape::Cuboid {
+			half_extends: Vec3::new(100.0 / 2.0, 100.0 / 2.0, 0.0),
+			border_radius: None,
+		})
         .insert(GameMarker)
         .insert(Cat)
         .insert(Seen(false))
@@ -92,14 +95,15 @@ pub fn cat_move(
             &mut BadTime,
             &mut GoAway,
             &mut Handle<SpriteSheetAnimation>,
+            &Seen,
         ),
         With<Cat>,
     >,
     places: Query<(&Transform, &Seen, Option<&BadPlace>), (With<Place>, Without<Cat>)>,
     animations: Res<Animations>,
 ) {
-    for (mut cat, mut time, mut bad, mut badtime, mut go_away, mut animation) in cats.iter_mut() {
-        if go_away.0 || (time.0.elapsed().as_millis() > 500 && !bad.0) {
+    for (mut cat, mut time, mut bad, mut badtime, mut go_away, mut animation, cat_seen) in cats.iter_mut() {
+        if go_away.0 || (!cat_seen.0 && time.0.elapsed().as_millis() > 500 && !bad.0) {
             let mut rng = ::rand::thread_rng();
             let mut new_place = rng.gen_range(0..places.iter().count() * 3);
             for (place, seen, bad_place) in places.iter() {

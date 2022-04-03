@@ -5,6 +5,7 @@ use benimator::*;
 mod start;
 mod game;
 mod cat;
+mod places;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {

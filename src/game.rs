@@ -1,5 +1,6 @@
 use super::*;
 use crate::cat::*;
+use crate::places::*;
 use benimator::*;
 use bevy::prelude::*;
 use heron::*;
@@ -34,6 +35,7 @@ impl Plugin for Game {
         .add_system_set(
             SystemSet::on_enter(AppState::Game)
                 .with_system(spawn_game)
+                .with_system(spawn_places)
                 .with_system(spawn_cats),
         )
         .add_system_set(
@@ -41,7 +43,7 @@ impl Plugin for Game {
                 .with_system(move_torch)
                 .with_system(check_collisions)
                 .with_system(cat_move)
-                // .with_system(check_defeat)
+                .with_system(check_defeat)
                 .with_system(go_away),
         )
         .add_system_set(SystemSet::on_exit(AppState::Game).with_system(cleanup_game));
@@ -53,7 +55,7 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn_bundle(SpriteBundle {
             texture: asset_server.load("room.png"),
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
+                translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
             },
             sprite: Sprite {
@@ -83,7 +85,7 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn_bundle(SpriteBundle {
             texture: asset_server.load("torch.png"),
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, -2.0),
+                translation: Vec3::new(0.0, 0.0, 2.0),
                 ..Default::default()
             },
             sprite: Sprite {
@@ -94,135 +96,12 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(RigidBody::Static)
         .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
+        .insert(CollisionShape::Cuboid {
+			half_extends: Vec3::new(80.0 / 2.0, 80.0 / 2.0, 0.0),
+			border_radius: None,
+		})
         .insert(GameMarker)
         .insert(Torch);
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(100.0, 100.0, 2.0),
-                scale: Vec3::new(100.0, 100.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                color: Color::BLUE,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Static)
-        .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
-        .insert(GameMarker)
-        .insert(GoodPlace)
-        .insert(Place)
-        .insert(Seen(false));
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(200.0, -100.0, 2.0),
-                scale: Vec3::new(100.0, 100.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                color: Color::BLUE,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Static)
-        .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
-        .insert(GameMarker)
-        .insert(GoodPlace)
-        .insert(Place)
-        .insert(Seen(false));
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(-100.0, 100.0, 2.0),
-                scale: Vec3::new(100.0, 100.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                color: Color::BLUE,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Static)
-        .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
-        .insert(GameMarker)
-        .insert(GoodPlace)
-        .insert(Place)
-        .insert(Seen(false));
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(-200.0, -100.0, 2.0),
-                scale: Vec3::new(100.0, 100.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                color: Color::RED,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Static)
-        .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
-        .insert(GameMarker)
-        .insert(BadPlace)
-        .insert(Place)
-        .insert(Seen(false));
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(-400.0, -100.0, 2.0),
-                scale: Vec3::new(100.0, 100.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                color: Color::RED,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Static)
-        .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
-        .insert(GameMarker)
-        .insert(BadPlace)
-        .insert(Place)
-        .insert(Seen(false));
-
-    commands
-        .spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(-200.0, 300.0, 2.0),
-                scale: Vec3::new(100.0, 100.0, 0.0),
-                ..Default::default()
-            },
-            sprite: Sprite {
-                color: Color::RED,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Static)
-        .insert(SensorShape)
-        .insert(CollisionShape::Sphere { radius: 20.0 })
-        .insert(GameMarker)
-        .insert(BadPlace)
-        .insert(Place)
-        .insert(Seen(false));
 }
 
 fn cleanup_game(mut commands: Commands, query: Query<Entity, With<GameMarker>>) {
