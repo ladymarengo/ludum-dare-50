@@ -26,12 +26,15 @@ pub struct BadPlace;
 #[derive(Component)]
 pub struct Seen(pub bool);
 
+pub struct GameTime(pub Instant);
+
 pub struct Game;
 
 impl Plugin for Game {
     fn build(&self, app: &mut App) {
         app
         .init_resource::<cat::Animations>()
+        .insert_resource(GameTime(Instant::now()))
         .add_system_set(
             SystemSet::on_enter(AppState::Game)
                 .with_system(spawn_game)
@@ -45,6 +48,7 @@ impl Plugin for Game {
                 .with_system(cat_move)
                 .with_system(check_defeat)
                 .with_system(stop_running)
+                .with_system(update_points)
                 .with_system(go_away),
         )
         .add_system_set(SystemSet::on_exit(AppState::Game).with_system(cleanup_game));
@@ -181,4 +185,8 @@ fn check_collisions(
             _ => (),
         }
     }
+}
+
+pub fn update_points(mut points: ResMut<Points>, time: Res<GameTime>) {
+    points.0 = (time.0.elapsed().as_millis() / 1000) as u32;
 }

@@ -163,7 +163,7 @@ pub fn check_defeat(
 ) {
     for (bad, bad_time) in cats.iter() {
         if bad.0 && bad_time.0.elapsed().as_millis() > 5000 {
-            app_state.set(AppState::Start).unwrap();
+            app_state.set(AppState::Finish).unwrap();
         }
     }
 }
