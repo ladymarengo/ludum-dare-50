@@ -39,13 +39,13 @@ pub struct Animations {
 
 pub fn spawn_cats(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<LoadedAssets>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut animations: ResMut<Assets<SpriteSheetAnimation>>,
     mut handles: ResMut<Animations>,
 ) {
-    let texture = asset_server.load("cat1.png");
-    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(500.0, 500.0), 3, 2);
+    let texture = assets.0.get("cat1.png").unwrap();
+    let texture_atlas = TextureAtlas::from_grid(texture.clone(), Vec2::new(500.0, 500.0), 3, 2);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     handles.good = animations.add(SpriteSheetAnimation::from_range(
@@ -97,8 +97,8 @@ pub fn spawn_cats(
         .insert(Current(CurrentPlace::Good))
         .insert(Play);
 
-    let texture = asset_server.load("cat2.png");
-    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(500.0, 500.0), 3, 2);
+    let texture = assets.0.get("cat2.png").unwrap();
+    let texture_atlas = TextureAtlas::from_grid(texture.clone(), Vec2::new(500.0, 500.0), 3, 2);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     commands

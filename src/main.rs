@@ -1,13 +1,15 @@
+use std::collections::HashMap;
+
+use benimator::*;
 use bevy::prelude::*;
 use heron::*;
-use benimator::*;
 
-mod start;
-mod game;
 mod cat;
-mod places;
-mod logo_hint;
 mod finish;
+mod game;
+mod logo_hint;
+mod places;
+mod start;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AppState {
@@ -31,6 +33,7 @@ fn main() {
         })
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Points(0))
+        .insert_resource(LoadedAssets(HashMap::new()))
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(AnimationPlugin::default())
@@ -41,6 +44,7 @@ fn main() {
         .add_plugin(finish::Finish)
         .add_system(bevy::input::system::exit_on_esc_system)
         .add_startup_system(spawn_camera)
+        .add_startup_system(load_assets)
         .add_system(handle_input)
         .run()
 }
@@ -49,7 +53,8 @@ fn main() {
 pub struct MainCamera;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d())
+    commands
+        .spawn_bundle(OrthographicCameraBundle::new_2d())
         .insert(MainCamera);
 }
 
@@ -64,7 +69,31 @@ fn change_state(mut app_state: ResMut<State<AppState>>) {
         AppState::Logo => app_state.set(AppState::Start).unwrap(),
         AppState::Start => app_state.set(AppState::Hint).unwrap(),
         AppState::Hint => app_state.set(AppState::Game).unwrap(),
-        AppState::Game => app_state.set(AppState::Hint).unwrap(),
         AppState::Finish => app_state.set(AppState::Hint).unwrap(),
+        _ => (),
+    }
+}
+
+pub struct LoadedAssets(HashMap<String, Handle<Image>>);
+
+fn load_assets(mut assets: ResMut<LoadedAssets>, asset_server: Res<AssetServer>) {
+    let names = [
+        "broken_chair.png",
+        "broken_wire.png",
+        "broken_vase.png",
+        "broken_photo.png",
+        "broken_glass.png",
+        "cat1.png",
+        "cat2.png",
+        "hint.png",
+        "logo.png",
+        "room_transparent.png",
+        "room.png",
+        "start_seq.png",
+        "torch.png",
+    ];
+
+    for name in names {
+        assets.0.insert(name.to_string(), asset_server.load(name));
     }
 }

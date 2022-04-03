@@ -28,7 +28,7 @@ impl Plugin for Finish {
     }
 }
 
-pub fn spawn_finish(mut commands: Commands, asset_server: Res<AssetServer>, place: Res<FinalPlace>) {
+pub fn spawn_finish(mut commands: Commands, asset_server: Res<AssetServer>, assets: Res<LoadedAssets>, place: Res<FinalPlace>) {
     commands.spawn_bundle(UiCameraBundle::default());
 
     commands
@@ -72,9 +72,11 @@ pub fn spawn_finish(mut commands: Commands, asset_server: Res<AssetServer>, plac
 		CurrentPlace::Glass => path = "broken_glass.png".to_string(),
 	}
 	
+	let texture = assets.0.get(&path).unwrap();
+
 	commands
 		.spawn_bundle(SpriteBundle {
-			texture: asset_server.load(&path),
+			texture: texture.clone(),
 			transform: Transform {
 				translation: Vec3::new(0.0, 0.0, 0.0),
 				..Default::default()

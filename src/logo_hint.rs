@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use super::AppState;
+use super::*;
 
 #[derive(Component)]
 pub struct LogoMarker;
@@ -19,10 +19,10 @@ impl Plugin for Logo {
     }
 }
 
-fn spawn_logo(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_logo(mut commands: Commands, assets: Res<LoadedAssets>) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("logo.png"),
+            texture: assets.0.get("logo.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
@@ -60,10 +60,10 @@ impl Plugin for Hint {
     }
 }
 
-fn spawn_hint(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_hint(mut commands: Commands, assets: Res<LoadedAssets>) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("hint.png"),
+            texture: assets.0.get("hint.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()

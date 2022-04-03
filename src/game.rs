@@ -54,10 +54,11 @@ impl Plugin for Game {
     }
 }
 
-fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_game(mut commands: Commands, assets: Res<LoadedAssets>) {
+
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("room.png"),
+            texture: assets.0.get("room.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 0.0),
                 ..Default::default()
@@ -72,7 +73,7 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands
     .spawn_bundle(SpriteBundle {
-        texture: asset_server.load("room_transparent.png"),
+        texture: assets.0.get("room_transparent.png").unwrap().clone(),
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, 3.0),
             ..Default::default()
@@ -87,7 +88,7 @@ fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands
         .spawn_bundle(SpriteBundle {
-            texture: asset_server.load("torch.png"),
+            texture: assets.0.get("torch.png").unwrap().clone(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 2.0),
                 ..Default::default()

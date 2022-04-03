@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use super::AppState;
+use super::*;
 use benimator::*;
 use std::time::Duration;
 
@@ -24,12 +24,12 @@ impl Plugin for StartAnimation {
     }
 }
 
-fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>,
+fn spawn_start(mut commands: Commands, assets: Res<LoadedAssets>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut animations: ResMut<Assets<SpriteSheetAnimation>>) {
 
-    let texture = asset_server.load("start_seq.png");
-    let texture_atlas = TextureAtlas::from_grid(texture, Vec2::new(800.0, 600.0), 6, 5);
+    let texture = assets.0.get("start_seq.png").unwrap();
+    let texture_atlas = TextureAtlas::from_grid(texture.clone(), Vec2::new(800.0, 600.0), 6, 5);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     let animation_handle = animations.add(SpriteSheetAnimation::from_range(
