@@ -13,10 +13,10 @@ pub struct Cat;
 pub struct MoveTime(pub Instant);
 
 #[derive(Component)]
-pub struct BadTime(pub Instant);
+pub struct BadTime(pub u32);
 
 #[derive(Component)]
-pub struct LookTime(pub Instant);
+pub struct LookTime(pub u32);
 
 #[derive(Component)]
 pub struct RunTime(pub Instant);
@@ -87,8 +87,8 @@ pub fn spawn_cats(
         .insert(Cat)
         .insert(Seen(false))
         .insert(MoveTime(Instant::now()))
-        .insert(BadTime(Instant::now()))
-        .insert(LookTime(Instant::now()))
+        .insert(BadTime(0))
+        .insert(LookTime(0))
         .insert(RunTime(Instant::now()))
         .insert(Bad(false))
         .insert(GoAway(false))
@@ -125,8 +125,8 @@ pub fn spawn_cats(
         .insert(Cat)
         .insert(Seen(false))
         .insert(MoveTime(Instant::now()))
-        .insert(BadTime(Instant::now()))
-        .insert(LookTime(Instant::now()))
+        .insert(BadTime(0))
+        .insert(LookTime(0))
         .insert(RunTime(Instant::now()))
         .insert(Bad(false))
         .insert(GoAway(false))
@@ -181,7 +181,7 @@ pub fn cat_move(
                         if let Some(_bp) = bad_place {
                             *animation = animations.bad.clone();
                             bad.0 = true;
-                            badtime.0 = Instant::now();
+                            badtime.0 = 0;
                         } else {
                             *animation = animations.good.clone();
                         }
@@ -198,14 +198,19 @@ pub fn cat_move(
 }
 
 pub fn check_defeat(
-    cats: Query<(&mut Bad, &mut BadTime, &Current), With<Cat>>,
+    mut cats: Query<(&Bad, &Seen, &mut BadTime, &Current), With<Cat>>,
     mut app_state: ResMut<State<AppState>>,
     mut broken: ResMut<FinalPlace>,
 ) {
-    for (bad, bad_time, place) in cats.iter() {
-        if bad.0 && bad_time.0.elapsed().as_millis() > 5000 {
-            broken.0 = place.0;
-            app_state.set(AppState::Finish).unwrap();
+    for (bad, seen, mut bad_time, place) in cats.iter_mut() {
+        if bad.0 && !seen.0 {
+            if bad_time.0 > 300 {
+                broken.0 = place.0;
+                app_state.set(AppState::Finish).unwrap();
+            } else {
+                bad_time.0 += 1;
+            }
+            
         }
     }
 }
@@ -228,11 +233,11 @@ pub fn go_away(
     for (mut bad, look_time, mut go_away, mut seen, mut running, mut run_time, mut animation) in
         cats.iter_mut()
     {
-        // dbg!(running.0, bad.0, seen.0, look_time.0.elapsed().as_millis());
-        if !running.0 && bad.0 && seen.0 && look_time.0.elapsed().as_millis() > 1000 {
+        dbg!(go_away.0);
+        if !running.0 && bad.0 && seen.0 && look_time.0 > 70 {
             bad.0 = false;
-            go_away.0 = true;
-            seen.0 = false;
+            // go_away.0 = true;
+            // seen.0 = false;
             running.0 = true;
             run_time.0 = Instant::now();
             *animation = animations.run.clone();

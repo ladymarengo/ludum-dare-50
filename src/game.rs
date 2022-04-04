@@ -137,52 +137,35 @@ fn move_torch(
 }
 
 fn check_collisions(
-    mut events: EventReader<CollisionEvent>,
-    torch: Query<Entity, With<Torch>>,
-    mut good_places: Query<(
-        Entity,
-        &mut Transform,
+    torch: Query<&Transform, With<Torch>>,
+    mut objects: Query<(
+        &Transform,
         &mut Seen,
-        Option<&Place>,
         Option<&Bad>,
         Option<&mut LookTime>,
     )>,
 ) {
     let torch = torch.single();
-    for event in events.iter() {
-        match event {
-            CollisionEvent::Started(t, some_place) if t.rigid_body_entity() == torch => {
-                for (place, mut place_transform, mut seen, is_place, bad, look_time) in
-                    good_places.iter_mut()
-                {
-                    if place == some_place.rigid_body_entity() {
-                        if let Some(_is_place) = is_place {
-                            place_transform.scale = Vec3::new(10.0, 10.0, 0.0);
-                        }
-                        if let Some(mut look_time) = look_time {
-                            if let Some(bad) = bad {
-                                if bad.0 {
-                                    look_time.0 = Instant::now();
-                                }
-                            }
-                        }
-                        seen.0 = true;
+
+    for (object, mut seen, bad, look_time) in objects.iter_mut() {
+        if (torch.translation.x - object.translation.x).abs() < 100.0 && (torch.translation.y - object.translation.y).abs() < 100.0 {
+            seen.0 = true;
+            if let Some(mut look_time) = look_time {
+                if let Some(bad) = bad {
+                    if bad.0 {
+                        look_time.0 += 1;
                     }
                 }
             }
-            CollisionEvent::Stopped(t, some_place) if t.rigid_body_entity() == torch => {
-                for (place, mut place_transform, mut seen, is_place, _bad, _look_time) in
-                    good_places.iter_mut()
-                {
-                    if place == some_place.rigid_body_entity() {
-                        if let Some(_is_place) = is_place {
-                            place_transform.scale = Vec3::new(100.0, 100.0, 0.0);
-                        }
-                        seen.0 = false;
+        } else {
+            seen.0 = false;
+            if let Some(mut look_time) = look_time {
+                if let Some(bad) = bad {
+                    if bad.0 {
+                        look_time.0 = 0;
                     }
                 }
             }
-            _ => (),
         }
     }
 }
