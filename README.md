@@ -4,6 +4,7 @@
 
 Compo is a Hard Mode format where games are created from scratch by one person in 48 hours.
 
-There is no way to make a game in two days without bugs so be kind :) Wasn't tested in browsers other than Chrome. Sometimes cats are so obnoxious that they don't care if you shine the light on them, you can try reloading the page to temporarily fix it.
-
+Wasn't tested in browsers other than Chrome.
 You can play it [here](https://ladymarengo.itch.io/crazy-cats)
+
+![demo](cats.webp)
